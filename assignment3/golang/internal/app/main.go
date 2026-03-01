@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 	"time"
-
+	"os"
 	"golang/internal/handler"
 	"golang/internal/middleware"
 	"golang/internal/repository"
@@ -34,18 +34,26 @@ func Run() {
 	root = middleware.Logger(root)
 	root = middleware.APIKey(root)
 
-	log.Println("server started on :8080")
+	log.Println("Starting the Server.")
 	log.Fatal(http.ListenAndServe(":8080", root))
+}
+
+func getEnv(key, def string) string {
+	v := os.Getenv(key)
+	if v == "" {
+		return def
+	}
+	return v
 }
 
 func initPostgreConfig() *modules.PostgreConfig {
 	return &modules.PostgreConfig{
-		Host:        "localhost",
-		Port:        "5432",
-		Username:    "postgres",
-		Password:    "A!$ha1973zha", 
-		DBName:      "mydb",
-		SSLMode:     "disable",
+		Host:        getEnv("POSTGRES_HOST", "db"),
+		Port:        getEnv("POSTGRES_PORT", "5432"),
+		Username:    getEnv("POSTGRES_USER", "postgres"),
+		Password:    getEnv("POSTGRES_PASSWORD", "postgres"),
+		DBName:      getEnv("POSTGRES_DB", "mydb"),
+		SSLMode:     getEnv("POSTGRES_SSLMODE", "disable"),
 		ExecTimeout: 5 * time.Second,
 	}
 }
